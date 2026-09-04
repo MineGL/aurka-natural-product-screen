@@ -44,11 +44,36 @@ code lives only on the author's workstation and is **not** included — see
 | 06 | PLIP protein–ligand interaction profiling of the candidate poses | `aurka_plip_v5.py` | complete — **code not included** |
 | 07 | Hit selection under the pre-registered rule (pose-1 physical validity → calibrated CNNaffinity threshold → hinge hydrogen bond → rank by CNNaffinity); fails closed if interaction profiling is absent | `pipeline/07_hit_selection/select_md_ready_hits.py` | complete |
 | — | MD protocol validation on the cognate ligand (SKE / JNJ-7706621) of 5DPV, three replicates | `md_protocol_validation/stage0_gate_v2.py` | complete |
+| — | Chance-correlation controls: y-randomisation of the XGBoost arm (50 permutations) and of the GAT arm (parallel workers) | `validation/yscramble_xgb.py`, `validation/yscramble_gat.py` | XGBoost complete; GAT running |
+| — | Binding-mode renders and 2D hit structures | `figures/render_binding_modes.py`, `figures/draw_survivors.py` | complete |
 | — | Molecular dynamics of the selected candidates | — | **not run; no code in this repository** |
 
 Stage 07 consumes the calibrated threshold from stage 05 by reading
 `cnn_cutoff_v4_summary.json`; it is never hardcoded. The MD protocol validation is a
 side branch that gates the MD protocol itself, not a step in the screening cascade.
+
+### The two y-randomisation scripts are not equivalent, and the difference matters
+
+`yscramble_xgb.py` **imports** `fit_xgb_ensemble` from the stage-01 script, so the
+randomised refits use the same code path that reproduces the deployed library
+predictions bit-exactly. Its control run reproduces the manifest-recorded frozen-test
+R² of 0.5947374556561659 exactly, which is what makes the scrambled baseline comparable.
+
+`yscramble_gat.py` cannot do this: **the deployed pipeline never refits the graph arm.**
+Stage 01 restores three checkpoints and validates them against saved predictions, so
+there is no refit path to import. Its training was therefore reconstructed —
+`validation/gat_train_lib_verbatim.py` holds the twenty-one training functions copied
+unmodified from the training notebook (early-stopping loop, normalisation transformer,
+potency sample weights and their six constants, prediction clipping, fold indexing),
+with hyperparameters read from the deployed fold manifest. The control run is the
+load-bearing check: the manifest records each fold's stop-set R² (0.4837, 0.5357,
+0.5749) and the deployed ensemble's 0.5987, and the reported gap against those values
+is what licenses any p value.
+
+Both scripts share one scope limit that must be stated wherever their results are:
+**hyperparameters are held at their selected values and only the fit is repeated under
+permutation.** Neither re-runs hyperparameter selection per permutation, so both bound
+chance correlation in the fit, not in model selection.
 
 ## Repository layout
 
@@ -68,6 +93,13 @@ side branch that gates the MD protocol itself, not a step in the screening casca
 │   │   └── define_cnn_cutoff_v4.py
 │   └── 07_hit_selection
 │       └── select_md_ready_hits.py
+├── validation
+│   ├── yscramble_xgb.py                     imports the stage-01 refit
+│   ├── yscramble_gat.py                     reconstructed fit; run as worker/reduce
+│   └── gat_train_lib_verbatim.py            21 training functions, copied unmodified
+├── figures
+│   ├── render_binding_modes.py              PyMOL, headless
+│   └── draw_survivors.py                    RDKit 2D depictions + .mol export
 └── md_protocol_validation
     └── stage0_gate_v2.py
 ```
