@@ -21,7 +21,7 @@ Hyperparameters come from the deployed fold manifest.
 
 The real-y control run is therefore the load-bearing check: the manifest records
 each fold's stop-set R2 (0.4837, 0.5357, 0.5749) and the frozen-test R2 of the
-deployed ensemble (0.5987). If the control reproduces those, the scrambled
+deployed ensemble (0.598683). If the control reproduces those, the scrambled
 baseline is comparable; the reported gap is what licenses the p value.
 
 Scope limit, identical to the XGBoost arm: hyperparameters are held at their
@@ -79,6 +79,10 @@ MIN_DELTA = 2e-3
 PREDICTION_CLIP_STD_MULT = 0.75
 PREDICTION_CLIP_MIN_MARGIN = 0.50
 SEED = 69
+
+# Frozen-test R2 of the DEPLOYED three-fold GAT ensemble, as deposited in
+# AURKA_external_validation_statistics.csv. The control run is compared against this.
+DEPLOYED_GAT_FROZEN_TEST_R2 = 0.598683
 
 split_manifest = pd.read_csv(IN["gat_split_manifest.csv"])
 
@@ -196,7 +200,11 @@ def reduce_results(n_iter):
     y_test = np.asarray(raw_test.y, dtype=float).flatten()
     rec = {"n_pool": int(len(raw_pool.y)), "n_test": int(len(y_test)), "device": device,
            "manifest_stop_r2": [float(x) for x in man["stop_r2"].tolist()],
-           "deployed_ensemble_frozen_test_R2": 0.5987,
+           # Deposited value from AURKA_external_validation_statistics.csv. An earlier
+           # revision hardcoded the rounded 0.5987, which shifted the reported delta in
+           # the fifth decimal (-0.0061262 against -0.0061092); both round to -0.0061 at
+           # the precision the paper quotes, but the exact value belongs here.
+           "deployed_ensemble_frozen_test_R2": DEPLOYED_GAT_FROZEN_TEST_R2,
            "scope": ("hyperparameters held at their selected values; only the fit is repeated "
                      "under permutation, so this bounds chance correlation in the fit and not "
                      "in model selection -- the same scope as the XGBoost arm"),
@@ -221,7 +229,8 @@ def reduce_results(n_iter):
         rec["control_frozen_test_R2"] = float(r2_score(y_test, pred))
         rec["control_stop_r2"] = [c["stop_r2"] for c in ctrl]
         rec["control_best_epoch"] = [c["best_epoch"] for c in ctrl]
-        rec["control_minus_deployed"] = rec["control_frozen_test_R2"] - 0.5987
+        rec["control_minus_deployed"] = (rec["control_frozen_test_R2"]
+                                        - DEPLOYED_GAT_FROZEN_TEST_R2)
     scr, done = [], []
     for i in range(n_iter):
         rows = gather(str(i))

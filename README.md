@@ -44,7 +44,7 @@ code lives only on the author's workstation and is **not** included — see
 | 06 | PLIP protein–ligand interaction profiling of the candidate poses | `aurka_plip_v5.py` | complete — **code not included** |
 | 07 | Hit selection under the pre-registered rule (pose-1 physical validity → calibrated CNNaffinity threshold → hinge hydrogen bond → rank by CNNaffinity); fails closed if interaction profiling is absent | `pipeline/07_hit_selection/select_md_ready_hits.py` | complete |
 | — | MD protocol validation on the cognate ligand (SKE / JNJ-7706621) of 5DPV, three replicates | `md_protocol_validation/stage0_gate_v2.py` | complete |
-| — | Chance-correlation controls: y-randomisation of the XGBoost arm (50 permutations) and of the GAT arm (parallel workers) | `validation/yscramble_xgb.py`, `validation/yscramble_gat.py` | XGBoost complete; GAT running |
+| — | Chance-correlation controls: y-randomisation of the XGBoost arm (50 permutations) and of the GAT arm (parallel workers) | `validation/yscramble_xgb.py`, `validation/yscramble_gat.py` | both complete |
 | — | Binding-mode renders and 2D hit structures | `figures/render_binding_modes.py`, `figures/draw_survivors.py` | complete |
 | — | Molecular dynamics of the selected candidates | — | **not run; no code in this repository** |
 
