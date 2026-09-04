@@ -1,0 +1,35 @@
+# Conda environment for the Python stages of this pipeline:
+#   01 consensus prediction, 03 druglikeness panel,
+#   05 docking-score calibration, 07 hit selection.
+#
+# This is a RECONSTRUCTION, not an export. Every version pin is the version read
+# from the environment that executed the work (see SOFTWARE.md), but the original
+# environment also contained unrelated packages and machine-specific paths, so it
+# is not reproduced verbatim. Channel assignment and the conda/pip split reflect
+# where these builds are normally obtainable, not how the original was installed.
+#
+# Docking, interaction profiling and MD are NOT covered here: they use separate
+# environments and standalone binaries (gnina, PLIP, GROMACS, AmberTools). See
+# SOFTWARE.md for their versions.
+#
+#   conda env create -f environment.yml && conda activate aurka-screen
+name: aurka-screen
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.23
+  - numpy=1.23.5
+  - pandas=1.5.3
+  - scipy=1.10.1
+  - rdkit=2023.09.6
+  - xgboost=2.1.4
+  - scikit-learn=1.2.2
+  - pip
+  - pip:
+      # torch/dgl/deepchem are pinned to the exact versions used. The CUDA build
+      # matters for torch: the GAT checkpoints were written under cu121. CPU-only
+      # inference is fine and is what the library prediction actually ran on.
+      - torch==2.1.2
+      - dgl==1.1.2
+      - deepchem==2.8.0

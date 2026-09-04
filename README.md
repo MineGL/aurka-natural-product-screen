@@ -21,6 +21,13 @@ repository, and nothing in the outputs it produced, constitutes a measurement or
 claim of biological activity for any compound: every quantity reported is a model
 score, a docking score, or a geometric interaction count.
 
+> **Software versions and environment.** Every version used is recorded in
+> [SOFTWARE.md](SOFTWARE.md), read from the environments that executed the work.
+> The Python stages are reproducible from [environment.yml](environment.yml)
+> (conda) or [requirements.txt](requirements.txt) (pip); docking, interaction
+> profiling and MD use standalone binaries whose versions and, for gnina, whose
+> binary SHA-256 are given in SOFTWARE.md.
+
 ## Pipeline stages, scripts and status
 
 Directory numbering follows pipeline order. The gaps (02, 04, 06) are the stages whose
