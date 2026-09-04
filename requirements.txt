@@ -1,0 +1,33 @@
+# Third-party Python packages imported by the scripts in this repository.
+# Deliberately unpinned: none of the scripts records the version it was run
+# with, so any pin here would be a guess. See README.md > Dependencies.
+#
+# The ML stack (deepchem / dgl / torch / tensorflow) is normally easier to
+# install with conda than with pip, and dgl must match the installed CUDA and
+# PyTorch build.
+
+# --- all stages ---
+numpy
+pandas
+
+# --- stage 01: consensus prediction (predict_coconut_xgb_gat_consensus_v5.py,
+#               gat_model_def.py) ---
+xgboost
+torch
+dgl
+deepchem
+tensorflow          # pulled in by the DeepChem loader; the PyTorch path is used
+
+# --- stage 03: druglikeness panel (swissadme_panel_v5.py) ---
+rdkit
+
+# --- stage 05: define_cnn_cutoff_v4.py, stage 07: select_md_ready_hits.py ---
+#     numpy + pandas only (ROC/Youden and the bootstrap are computed directly)
+
+# --- md_protocol_validation/stage0_gate_v2.py ---
+#     numpy only, plus the external GROMACS `gmx` binary on PATH
+
+# External binaries, not installable from this file:
+#   GROMACS (gmx)          MD protocol validation
+#   GNINA 1.3.3, CUDA      docking round (pipeline code not included)
+#   PLIP                   interaction profiling (pipeline code not included)
